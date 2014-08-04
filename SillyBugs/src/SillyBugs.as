@@ -7,7 +7,7 @@ package
 	
 	import starling.core.Starling;
 	
-	[SWF(width="1024", height="768", backgroundColor="0x00")]
+	[SWF(width="960", height="640", backgroundColor="0x00")]
 	public class SillyBugs extends AppBootStrap
 	{
 		SillyBugsAppConfig;

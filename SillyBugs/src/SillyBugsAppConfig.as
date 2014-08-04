@@ -1,7 +1,13 @@
 package
 {
+	import com.alex.sillyBugs.components.CameraScriptComponent;
 	import com.alex.sillyBugs.screens.MainScreen;
 	import com.croco2d.AppConfig;
+	import com.croco2d.CrocoEngine;
+	import com.croco2d.components.render.CameraRenderComponent;
+	import com.croco2d.core.GameObject;
+	import com.croco2d.screens.FlashBootStrapScreen;
+	import com.croco2d.screens.PreloadHubScreen;
 	
 	import flash.display3D.Context3DProfile;
 	
@@ -9,8 +15,51 @@ package
 
 	public final class SillyBugsAppConfig extends AppConfig
 	{
+		public static const DEFAULT_SILLYBUGS_COUNT:int = 50;
+		
+		CrocoEngine.debug = true;
+		
+		[Embed(source="assets/app/launchImage.png")]
+		private static var launchImageCls:Class;
+		
 		public static function init():void
 		{
+			crocoEngineConfig.clsProps.camera = 
+			{
+				clsType:GameObject,
+				props:
+				{
+					debug:CrocoEngine.debug,
+					initComponents:
+					[
+						{
+							clsType:CameraRenderComponent,
+							props:
+							{
+								debug:CrocoEngine.debug
+							}
+						}
+						,
+						{
+							clsType:CameraScriptComponent
+						}
+					]
+				}
+			}
+			
+			bootStrapSceenConfig = 
+			{
+				clsType:FlashBootStrapScreen,
+				
+				props:
+				{
+					launchImage:launchImageCls,
+					fadeoutDelayTime:2,
+					fadeoutTime:2,
+					fadeoutProps:{alpha:0}
+				}
+			}
+				
 			globalEvnConfig = 
 				{
 					//1.3333~ 1.777 ratio.
@@ -69,7 +118,22 @@ package
 						MainScreen,
 						null,
 						{
-							screenID:"MainScreen"
+							screenID:"MainScreen",
+							hubScreenID:"MainScreenHubScreen"
+						}
+					]
+				},
+				
+				//hub screens
+				{
+					clsType:ScreenNavigatorItem,
+					
+					ctorParams:
+					[
+						PreloadHubScreen,
+						null,
+						{
+							screenID:"MainScreenHubScreen"
 						}
 					]
 				}
