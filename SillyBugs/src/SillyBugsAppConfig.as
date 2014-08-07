@@ -1,6 +1,5 @@
 package
 {
-	import com.alex.sillyBugs.components.CameraScriptComponent;
 	import com.alex.sillyBugs.screens.MainScreen;
 	import com.croco2d.AppConfig;
 	import com.croco2d.CrocoEngine;
@@ -38,10 +37,6 @@ package
 							{
 								debug:CrocoEngine.debug
 							}
-						}
-						,
-						{
-							clsType:CameraScriptComponent
 						}
 					]
 				}

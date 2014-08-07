@@ -1,20 +1,13 @@
 ﻿package com.alex.sillyBugs.components
 {
+	import com.alex.sillyBugs.consants.EdgeBehaviorType;
 	import com.croco2d.components.script.ScriptComponent;
 	
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.geom.Vector3D;
 	
 	public class SillyBug extends ScriptComponent
 	{
-		//___________________________________________________________		_____
-		//————————————————————————————————————————————— CLASS MEMBERS		VALUE
-
-		public static const EDGE_NONE : String = 'none';
-		public static const EDGE_WRAP : String = 'wrap';
-		public static const EDGE_BOUNCE : String = 'bounce';
-
 		//———————————————————————————————————————————————————————————
 		
 		/**
@@ -32,11 +25,9 @@
 		private var _maxSpeedSQ : Number;
 		private var _velocity : Vector3D;
 		private var _position : Vector3D;
-		private var _oldPosition : Vector3D;
 		private var _acceleration : Vector3D;
 		private var _steeringForce : Vector3D;
 		
-		private var _edgeBehavior : String;
 		private var _boundsRadius : Number;
 		private var _boundsCentre : Vector3D = new Vector3D();
 		private var _radius : Number = 10.0;
@@ -55,9 +46,8 @@
 		
 		override protected function onInit():void
 		{
-			if(sillyBugGroup) sillyBugGroup.addSillyBug(this);
+			if(sillyBugGroup) sillyBugGroup.addChild(this);
 		}
-		
 		
 		/**
 		 * The position of the Boid along the x axis
@@ -129,62 +119,6 @@
 			_maxSpeedSQ = value * value;
 		}
 
-		/**
-		 * How the Boid behaves when it reaches the
-		 * boundaries of the stage. Possible values are:
-		 * 
-		 * EDGE_NONE
-		 * 
-		 * The Boid ignores the stage boundaries
-		 * 
-		 * EDGE_WRAP
-		 * 
-		 * If the Boid reaches the edge of the stage it 
-		 * will switch it's position to the opposite edge
-		 * 
-		 * EDGE_BOUNCE
-		 * 
-		 * The Boid will bounce off the side of it's 
-		 * boundaries in order to stay within them
-		 */
-
-		public function get edgeBehavior() : String
-		{
-			return _edgeBehavior;
-		}
-
-		public function set edgeBehavior( value : String ) : void
-		{
-			if ( value != EDGE_NONE && value != EDGE_WRAP && value != EDGE_BOUNCE )
-			{
-				trace('Warning >> "' + value + '" is not a valid edge behavior; defaulting to "none"');
-				_edgeBehavior = EDGE_NONE;
-			}
-			else
-			{
-				_edgeBehavior = value;
-			}
-		}
-
-		/**
-		 * The boundaries in which the Boid can move.
-		 * By default, these are set automatically from
-		 * from the stage of the Boids renderData (if 
-		 * one is provided). Alternatively, you can
-		 * override this by specifying a new Rectangle
-		 
-
-		public function get bounds() : Object
-		{
-		return _bounds;
-		}
-
-		public function set bounds( value : Object ) : void
-		{
-		_customBounds = true;
-		_bounds = value;
-		}*/
-		
 		/**
 		 * The centrepoint of the Boids bounding sphere.
 		 * If the Boid travels futher than boundsRadius 
@@ -310,11 +244,10 @@
 		//___________________________________________________________
 		//——————————————————————————————————————————————— CONSTRUCTOR
 
-		public function SillyBug( maxForce : Number = 1.0, maxSpeed : Number = 10.0, edgeBehavior : String = EDGE_NONE ) 
+		public function SillyBug( maxForce : Number = 1.0, maxSpeed : Number = 10.0) 
 		{
 			this.maxForce = maxForce;
 			this.maxSpeed = maxSpeed;
-			this.edgeBehavior = edgeBehavior;
 			
 			reset();
 		}
@@ -334,11 +267,7 @@
 
 		override public function tick(deltaTime:Number):void
 		{
-			_oldPosition.x = _position.x;
-			_oldPosition.y = _position.y;
-			
 			transform.setPosition(_position.x, _position.y);
-			
 			_velocity.incrementBy(_acceleration);
 			
 			if ( _velocity.lengthSquared > _maxSpeedSQ )
@@ -352,53 +281,43 @@
 			_acceleration.x = 0;
 			_acceleration.y = 0;
 			
-			if ( _edgeBehavior == EDGE_NONE || isNaN(_boundsRadius) )
-			{
-				return;
-			}
-			
-			if( !_position.equals(_oldPosition) )
-			{
-				var distance : Number = Vector3D.distance(_position, _boundsCentre);
-				
-				if( distance > _boundsRadius + _radius )
-				{
-					switch( _edgeBehavior )
-					{
-						case EDGE_BOUNCE :
-						
-							/**
-						 	 * Move the boid to the edge of the boundary 
-						 	 * then invert it's velocity and step it 
-						 	 * forward back into the sphere 
-						 	 */
-							
-							_position.decrementBy(_boundsCentre);
-							_position.normalize();
-							_position.scaleBy(_boundsRadius + _radius);
-							
-							_velocity.scaleBy(-1);
-							_position.incrementBy(_velocity);
-							_position.incrementBy(_boundsCentre);
-						
-							break;
-						
-						case EDGE_WRAP :
-							
-							/**
-							 * Move the Boid to the antipodal point of it's 
-							 * current position on the bounding sphere by 
-							 * taking the inverse of it's position vector
-							 */
-
-							_position.decrementBy(_boundsCentre);
-							_position.negate();
-							_position.incrementBy(_boundsCentre);
-
-							break;
-					}
-				}
-			}
+//			var distance : Number = Vector3D.distance(_position, _boundsCentre);
+//			
+//			if( distance > _boundsRadius + _radius )
+//			{
+//				switch( _edgeBehavior )
+//				{
+//					case EDGE_BOUNCE :
+//						
+//						/**
+//						 * Move the boid to the edge of the boundary 
+//						 * then invert it's velocity and step it 
+//						 * forward back into the sphere 
+//						 */
+//						
+//						_position.decrementBy(_boundsCentre);
+//						_position.normalize();
+//						_position.scaleBy(_boundsRadius + _radius);
+//						
+//						_velocity.scaleBy(-1);
+//						_position.incrementBy(_velocity);
+//						_position.incrementBy(_boundsCentre);
+//						break;
+//					
+//					case EDGE_WRAP :
+//						
+//						/**
+//						 * Move the Boid to the antipodal point of it's 
+//						 * current position on the bounding sphere by 
+//						 * taking the inverse of it's position vector
+//						 */
+//						
+//						_position.decrementBy(_boundsCentre);
+//						_position.negate();
+//						_position.incrementBy(_boundsCentre);
+//						break;
+//				}
+//			}
 		}
 
 		/**
@@ -429,91 +348,66 @@
 		 * 
 		 */
 
-		public function constrainToRect(rect : Rectangle, behavior : String = EDGE_BOUNCE) : void
+		public function constrainToRect(rect : Rectangle, behavior : EdgeBehaviorType) : void
 		{
-			calculateScreenCoords();
+			if ( _position.x < rect.left - _radius )
+			{
+				switch( behavior )
+				{
+					case EdgeBehaviorType.EDGE_WRAP :
+						_position.x = rect.right;
+						break;
+					
+					case EdgeBehaviorType.EDGE_BOUNCE :
+						_position.x = rect.left;
+						_velocity.x *= -1;
+						break;
+				}
+			}
+			else if ( _position.x > rect.right + _radius )
+			{
+				switch( behavior )
+				{
+					case EdgeBehaviorType.EDGE_WRAP :
+						_position.x = rect.left;
+						break;
+					
+					case EdgeBehaviorType.EDGE_BOUNCE :
+						_position.x = rect.right;
+						_velocity.x *= -1;
+						break;
+				}
+			}
 			
-//			if ( _screenCoords.x < rect.left - _radius )
-//			{
-//				switch( behavior )
-//				{
-//					case EDGE_WRAP :
-//					
-//						_screenCoords.x = rect.right;
-////						_renderData.transform.matrix3D.identity();
-////						_position.x = _renderData.globalToLocal3D(_screenCoords).x;
-//					
-//						break;
-//					
-//					case EDGE_BOUNCE :
-//					
-//						_position.x = rect.left;
-//						_velocity.x *= -1;
-//					
-//						break;
-//				}
-//			}
-//			else if ( _screenCoords.x > rect.right + _radius )
-//			{
-//				switch( behavior )
-//				{
-//					case EDGE_WRAP :
-//					
-//						_screenCoords.x = rect.left;
-////						_renderData.transform.matrix3D.identity();
-////						_position.x = _renderData.globalToLocal3D(_screenCoords).x;
-//					
-//						break;
-//					
-//					case EDGE_BOUNCE :
-//					
-//						_position.x = rect.right;
-//						_velocity.x *= -1;
-//					
-//						break;
-//				}
-//			}
-//			
-//			if ( _screenCoords.y < rect.top - _radius )
-//			{
-//				switch( behavior )
-//				{
-//					case EDGE_WRAP :
-//					
-//						_screenCoords.y = rect.bottom;
-////						_renderData.transform.matrix3D.identity();
-////						_position.y = _renderData.globalToLocal3D(_screenCoords).y;
-//					
-//						break;
-//					
-//					case EDGE_BOUNCE :
-//					
-//						_position.y = rect.top;
-//						_velocity.y *= -1;
-//					
-//						break;
-//				}
-//			}
-//			else if ( _screenCoords.y > rect.bottom + _radius )
-//			{
-//				switch( behavior )
-//				{
-//					case EDGE_WRAP :
-//					
-//						_screenCoords.y = rect.top;
-////						_renderData.transform.matrix3D.identity();
-////						_position.y = _renderData.globalToLocal3D(_screenCoords).y;
-//					
-//						break;
-//					
-//					case EDGE_BOUNCE :
-//					
-//						_position.y = rect.bottom;
-//						_velocity.y *= -1;
-//					
-//						break;
-//				}
-//			}
+			if ( _position.y < rect.top - _radius )
+			{
+				switch( behavior )
+				{
+					case EdgeBehaviorType.EDGE_WRAP :
+						_position.y = rect.bottom;
+						break;
+					
+					case EdgeBehaviorType.EDGE_BOUNCE :
+						_position.y = rect.top;
+						_velocity.y *= -1;
+					
+						break;
+				}
+			}
+			else if ( _position.y > rect.bottom + _radius )
+			{
+				switch( behavior )
+				{
+					case EdgeBehaviorType.EDGE_WRAP :
+						_position.y = rect.top;
+						break;
+					
+					case EdgeBehaviorType.EDGE_BOUNCE :
+						_position.y = rect.bottom;
+						_velocity.y *= -1;
+						break;
+				}
+			}
 		}
 
 		//___________________________________________________________
@@ -861,7 +755,6 @@
 		{
 			_velocity = new Vector3D();
 			_position = new Vector3D();
-			_oldPosition = new Vector3D();
 			_acceleration = new Vector3D();
 			_steeringForce = new Vector3D();
 		}
@@ -992,14 +885,6 @@
 			}
 			
 			return force;
-		}
-
-		private function calculateScreenCoords() : void
-		{
-			if ( !_position.equals(_oldPosition))
-			{
-//				_screenCoords = _renderData.local3DToGlobal(ZERO);
-			}
 		}
 	}
 }
